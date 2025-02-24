@@ -33,7 +33,7 @@
 
               <div class="row gy-2 overflow-hidden">
 
-                <div class="col-12">
+                <!-- <div class="col-12">
                   <div class="form-floating mb-3">
                     <input type="email" class="form-control @error('email') is-invalid @enderror" name="email" id="email" placeholder="name@example.com" required>
                     <label for="email" class="form-label">{{ __('Email Address') }}</label>
@@ -41,7 +41,7 @@
                         <span class="text-danger">{{ $errors->first('email') }}</span>
                     @endif
                   </div>
-                </div>
+                </div> -->
 
                 <div class="col-12">
                   <div class="form-floating mb-3">

@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use App\Models\PasswordReset;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
@@ -24,12 +25,11 @@ class AuthController extends Controller
         $validator = Validator::make($request->all(), [
             'first_name' => 'required|string|max:255',
             'last_name' => 'required|string|max:255',
-            'email' => 'required|string|unique:users',
+            'email' => 'required|string|unique:users|email:rfc,dns',
             'phone_number' => 'required|string|max:15',
             'password' => 'required|string|min:6|confirmed',
             'picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|string|max:255',
-            'device_token' => 'required|string',
         ]);
 
         if ($validator->fails()) {
@@ -96,11 +96,12 @@ class AuthController extends Controller
   
           $token = Str::random(64);
   
-          DB::table('password_resets')->insert([
-              'email' => $request->email, 
-              'token' => $token, 
-              'created_at' => Carbon::now()
-            ]);
+       
+          PasswordReset::create([
+            'email' => $request->email,
+            'token' => $token,
+        ]);
+
   
           Mail::send('email.forgetPassword', ['token' => $token], function($message) use($request){
               $message->to($request->email);
@@ -113,26 +114,23 @@ class AuthController extends Controller
       public function submitResetPasswordForm(Request $request): RedirectResponse
       {
           $request->validate([
-              'email' => 'required|email|exists:users',
               'password' => 'required|string|min:6|confirmed',
               'password_confirmation' => 'required'
           ]);
-  
-          $updatePassword = DB::table('password_resets')
-                              ->where([
-                                'email' => $request->email, 
-                                'token' => $request->token
-                              ])
-                              ->first();
+          $email = PasswordReset::where('token',$request->token)->pluck('email');
+          $updatePassword = PasswordReset::where('token', $request->token)->first();
+
   
           if(!$updatePassword){
               return back()->withInput()->with('error', 'Invalid token!');
           }
-  
-          $user = User::where('email', $request->email)
-                      ->update(['password' => Hash::make($request->password)]);
- 
-          DB::table('password_resets')->where(['email'=> $request->email])->delete();
+
+          $user = User::where('email', $email)
+            ->update(['password' => Hash::make($request->password)]);
+
+
+          PasswordReset::where('token', $request->token)->delete();
+
   
           return redirect('/login')->with('message', 'Your password has been changed!');
       }

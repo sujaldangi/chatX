@@ -9,7 +9,12 @@ class ViewController extends Controller
 {
     public function registerView(Request $request)
     {
-        return view('auth.register');
+        if (Auth::check()) {
+            return redirect()->route('dashboard');
+        }
+        return response()
+        ->view('auth.register')
+        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
     }
 
     public function loginView(Request $request)

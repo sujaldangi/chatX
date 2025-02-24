@@ -108,6 +108,12 @@
 <div class="container">
     <h2>Login</h2>
 
+    @if (session('message'))
+        <div class="alert alert-success">
+            {{ session('message') }}
+        </div>
+    @endif
+
     <!-- Display login error message if any -->
     @if (session('error'))
         <div class="alert alert-danger">

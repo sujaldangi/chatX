@@ -27,15 +27,21 @@ class FirebaseService
 
     public function startChat($senderId, $receiverId)
     {
+        $customKey = $senderId < $receiverId ? $senderId . $receiverId : $receiverId . $senderId;
+        $existingChat = $this->database->getReference('chat/' . $customKey)->getValue();
+        if ($existingChat) {
+            $response = ['success' => false, 'message' => 'Chat already exists'];
+            return response()->json($response, 400);
+        }
         $participantsData = [
             'participants' => [
                 '0' => $senderId,
                 '1' => $receiverId,
             ],
-            'type' => 'individual',
+            'type' => 'individual'
         ];
       
-        $customKey = $senderId.$receiverId;
+        
         $this->database->getReference('chat/' . $customKey)
         ->set($participantsData);
         $response = ['success' => true, 'data' => [], 'message' => 'chat started say hi!'];
@@ -55,18 +61,7 @@ class FirebaseService
             'type' => 'group',
             'created_by' => $createdBy,
         ];
-        // $participantsData = [
-        //     'participants' => [],
-        //     'type' => 'group',
-        //     'created_by' => $createdBy,
-        // ];
-        
-        
-        // foreach ($participants as $key => $participant) {
-        //     $participantsData['participants'][$key] = $participant;
-        // }
       
-        // $customKey = $groupName;
         $this->database->getReference('chat/' . $uniqueGroupId)
         ->set($participantsData);
        
@@ -128,71 +123,92 @@ class FirebaseService
     }
 
     public function getChatsForUser($userId)
-    {
-        // Reference to the chats in Firebase
-        $chatsRef = $this->database->getReference('chat');
-        
-        // Retrieve all chats
-        $chatsData = $chatsRef->getSnapshot()->getValue();
-        \Log::info($chatsData);
-        // If no chats are found, return null
-        if ($chatsData === null) {
-            return null;
-        }
-
-        $userChats = [];
-        
-        // Loop through each chat to check if the user is a participant
-        foreach ($chatsData as $chatKey => $chatData) {
-            if (in_array($userId, $chatData['participants'])) {
-                // Get the last message if messages exist, otherwise default to 'No messages yet'
-                $lastMessage = 'No messages yet';  // Default message
-                if (isset($chatData['messages']) && !empty($chatData['messages'])) {
-                    $lastMessage = end($chatData['messages']);
-                    $lastMessage = $lastMessage['content'] ?? 'No content';  // Get the content if available
-                }
-
-                // Get the user's name (you may want to handle this depending on chat type)
-                $p1name = User::find($chatData['participants'][1])->first_name;
-                $p2name = User::find($chatData['participants'][0])->first_name;
-                // Build chat data
-                $userChats[] = [
-                    'chat_key' => $chatKey,
-                    'name_p1' => $p1name,
-                    'name_p2' => $p2name,
-                    'last_message' => $lastMessage,
-                    'participants' => $chatData['participants'],
-                    'group_name' => $chatData['group_name'] ?? null,
-                    'messages' => $chatData['messages'] ?? null,
-                    'type' => $chatData['type'] ?? null,
-                    'created_by' => $chatData['created_by'] ?? null, // For group chats
-                ];
-            }
-        }
-
-        return $userChats;
+{
+    // Reference to the chats in Firebase
+    $chatsRef = $this->database->getReference('chat');
+    
+    // Retrieve all chats
+    $chatsData = $chatsRef->getSnapshot()->getValue();
+    \Log::info($chatsData);
+    
+    // If no chats are found, return null
+    if ($chatsData === null) {
+        return null;
     }
 
-    public function getMessagesForChat($userId,$recieverId)
+    $userChats = [];
+    
+    // Loop through each chat to check if the user is a participant
+    foreach ($chatsData as $chatKey => $chatData) {
+        // Ensure the 'participants' key exists
+        if (isset($chatData['participants']) && in_array($userId, $chatData['participants'])) {
+            // Get the last message if messages exist, otherwise default to 'No messages yet'
+            $lastMessage = 'No messages yet';  // Default message
+            if (isset($chatData['messages']) && !empty($chatData['messages'])) {
+                $lastMessage = end($chatData['messages']);
+                $lastMessage = $lastMessage['content'] ?? 'No content';  // Get the content if available
+            }
+
+            // Get the user's name (you may want to handle this depending on chat type)
+            $p1name = User::find($chatData['participants'][1])->first_name ?? 'Unknown';
+            $p2name = User::find($chatData['participants'][0])->first_name ?? 'Unknown';
+
+            // Build chat data
+            $userChats[] = [
+                'chat_key' => $chatKey,
+                'name_p1' => $p1name,
+                'name_p2' => $p2name,
+                'last_message' => $lastMessage,
+                'participants' => $chatData['participants'],
+                'group_name' => $chatData['group_name'] ?? null,
+                'messages' => $chatData['messages'] ?? null,
+                'type' => $chatData['type'] ?? null,
+                'created_by' => $chatData['created_by'] ?? null, // For group chats
+            ];
+        }
+    }
+
+    return $userChats;
+}
+
+
+public function getMessagesForChat($userId, $receiverId)
 {
-    $chatKey = $userId < $recieverId ? $userId . $recieverId : $recieverId . $userId;
+    $chatKey = $userId < $receiverId ? $userId . $receiverId : $receiverId . $userId;
   
     $chatRef = $this->database->getReference('chat/' . $chatKey);
     $chatData = $chatRef->getSnapshot()->getValue();
     
-    // If no chats are found, return null
+    // If no chat is found, return a 404 response
     if ($chatData === null) {
-        return null;
+        $response = [
+            'success' => false,
+            'message' => 'Chat not found',
+        ];
+        return response()->json($response, 404);
     }
+
+    
+    if (!isset($chatData['participants'])) {
+        \Log::error("Participants key missing for chat: " . $chatKey);
+        $response = [
+            'success' => false,
+            'message' => 'Participants data is missing',
+        ];
+        return response()->json($response, 400);  
+    }
+
+   
     \Log::info($chatData);
+    
    
     
     return [
         'participants' => $chatData['participants'],
         'messages' => $chatData['messages'] ?? [],
     ];
-    
 }
+
 
 
 

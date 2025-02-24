@@ -6,6 +6,7 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Broadcasting\PrivateChannel;
 use App\Models\User;
 class MessageSent implements ShouldBroadcast
 {
@@ -24,7 +25,11 @@ class MessageSent implements ShouldBroadcast
 
     public function broadcastOn()
     {
-        return new Channel('chat-channel');
+        $channelName = 'chat.' . min($this->sender_id, $this->reciever_id) . '.' . max($this->sender_id, $this->reciever_id);
+        \Log::info('Channel name: ' . $channelName);
+    
+        // return new PrivateChannel($channelName);
+        return new Channel($channelName);
     }
     public function broadcastAs()
     {

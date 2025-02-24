@@ -98,6 +98,22 @@
             bottom: 0;
             background-color: white;
         }
+        #chat-box {
+            position: fixed;
+            top: 60px;
+            left: 292px;
+            right: 0;
+            bottom: 0;
+            background-color: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            z-index: 999;
+            overflow-y: auto;  /* Add this line to enable vertical scrolling */
+        }
+
 
         #chat-box button {
             padding: 10px;
@@ -253,39 +269,45 @@
 </div>
 
 <script>
+     document.addEventListener("DOMContentLoaded", function () {
+        fetchChats();  // Fetch chats on page load
+    });
      Pusher.logToConsole = true;
         var pusher = new Pusher('24c0536b2bb45e29a90e', {
             cluster: 'ap2'
         });
+//         // console.log(sender_id,receiver_id);
+//         var channelName = 'chat.' + Math.min({{ auth()->user()->id }},window.currentReceiverId) + '.' + Math.max({{ auth()->user()->id }}, window.currentReceiverId);
 
-        // Subscribe to the chat channel
-        var channel = pusher.subscribe('chat-channel');
+//         console.log(channelName);
+//         var channel = pusher.subscribe(channelName);
+        
 
 
-        channel.bind('MessageSent', function (data) {
-    console.log('Message received via Pusher:', data);
-    const message = data.message;
+//         channel.bind('MessageSent', function (data) {
+//     console.log('Message received via Pusher:', data);
+//     const message = data.message;
     
-    // Create a new message element
-    const messageElement = document.createElement('div');
+//     // Create a new message element
+//     const messageElement = document.createElement('div');
     
-    // Check if the message is from the current user or the other user
-    if (message.sender_id === "{{ auth()->user()->id }}") {
-        messageElement.classList.add('message', 'sent'); // Add 'sent' class for current user's messages
-    } else {
-        messageElement.classList.add('message', 'received'); // Add 'received' class for other user's messages
-    }
+//     // Check if the message is from the current user or the other user
+//     if (message.sender_id === "{{ auth()->user()->id }}") {
+//         messageElement.classList.add('message', 'sent'); // Add 'sent' class for current user's messages
+//     } else {
+//         messageElement.classList.add('message', 'received'); // Add 'received' class for other user's messages
+//     }
     
-    messageElement.innerHTML = `
-        <p><strong>${message.sender_id === "{{ auth()->user()->id }}" ? "You" : message.sender_name}:</strong> ${message.content}</p>
-    `;
+//     messageElement.innerHTML = `
+//         <p><strong>${message.sender_id === "{{ auth()->user()->id }}" ? "You" : message.sender_name}:</strong> ${message.content}</p>
+//     `;
 
-    // Append the new message to the messages container
-    document.getElementById('messages').appendChild(messageElement);
-});
-    document.addEventListener("DOMContentLoaded", function () {
-        fetchChats();  // Fetch chats on page load
-    });
+//     // Append the new message to the messages container
+//     document.getElementById('messages').appendChild(messageElement);
+// });
+// document.addEventListener("DOMContentLoaded", function () {
+//         fetchChats();  // Fetch chats on page load
+//     });
 
     // Open Modal to select a user
     function openUserModal() {
@@ -418,8 +440,39 @@
         displayMessages(data.chats);
         const messagesContainer = document.getElementById("messages");
         messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        subscribeToPusherChannel(receiverId)
     })
     .catch(error => console.log("Error fetching messages:", error));
+}
+
+function subscribeToPusherChannel(receiverId) {
+    const senderId = {{ auth()->user()->id }};
+    const channelName = 'chat.' + Math.min(senderId, receiverId) + '.' + Math.max(senderId, receiverId);
+    console.log('Subscribing to channel:', channelName);
+
+    var channel = pusher.subscribe(channelName);
+
+    channel.bind('MessageSent', function (data) {
+        console.log('Message received via Pusher:', data);
+        const message = data.message;
+
+        // Create a new message element
+        const messageElement = document.createElement('div');
+
+        // Check if the message is from the current user or the other user
+        if (message.sender_id === "{{ auth()->user()->id }}") {
+            messageElement.classList.add('message', 'sent'); // Add 'sent' class for current user's messages
+        } else {
+            messageElement.classList.add('message', 'received'); // Add 'received' class for other user's messages
+        }
+
+        messageElement.innerHTML = `
+            <p><strong>${message.sender_id === "{{ auth()->user()->id }}" ? "You" : 'User'}:</strong> ${message.content}</p>
+        `;
+
+        // Append the new message to the messages container
+        document.getElementById('messages').appendChild(messageElement);
+    });
 }
 
 
