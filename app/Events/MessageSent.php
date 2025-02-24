@@ -6,7 +6,7 @@ use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Queue\SerializesModels;
-
+use App\Models\User;
 class MessageSent implements ShouldBroadcast
 {
     use InteractsWithSockets, SerializesModels;
@@ -29,6 +29,17 @@ class MessageSent implements ShouldBroadcast
     public function broadcastAs()
     {
         return 'MessageSent';
+    }
+    public function broadcastWith()
+    {
+        return [
+            'message' => [
+                'sender_id' => $this->sender_id,
+                'receiver_id' => $this->reciever_id,
+                'content' => $this->message,
+                'sender_name' => User::find($this->sender_id)->name, // Assuming you have a User model
+            ]
+        ];
     }
     public function shouldBroadcastNow()
     {

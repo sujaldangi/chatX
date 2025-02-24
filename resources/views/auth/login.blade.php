@@ -136,6 +136,9 @@
     <div class="mt-3">
         <a href="{{ route('forget.password.get') }}" class="link-primary text-decoration-none">{{ __('forgot password?') }}</a>
     </div>
+    <div class="mt-3">
+        <a href="{{ route('register') }}" class="link-primary text-decoration-none">{{ __('Register') }}</a>
+    </div>
 </div>
 
 </body>

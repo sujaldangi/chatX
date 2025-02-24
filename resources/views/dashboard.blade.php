@@ -200,6 +200,17 @@
             font-size: 16px;
             margin-left: 10px;
         }
+        .message.sent {
+            background-color: #007bff; /* Blue for sent messages */
+            color: white;
+            align-self: flex-end;
+        }
+
+        .message.received {
+            background-color: #f1f1f1; /* Grey for received messages */
+            color: black;
+            align-self: flex-start;
+        }
 
 
 
@@ -266,7 +277,7 @@
     }
     
     messageElement.innerHTML = `
-        <p><strong>${message.sender_name}:</strong> ${message}</p>
+        <p><strong>${message.sender_id === "{{ auth()->user()->id }}" ? "You" : message.sender_name}:</strong> ${message.content}</p>
     `;
 
     // Append the new message to the messages container
@@ -359,13 +370,20 @@
     function displayChats(chats) {
         const chatListContainer = document.getElementById("chat-list");
         chatListContainer.innerHTML = "";  // Clear the existing chats
-
+        const currentUserName = "{{ auth()->user()->first_name }}";
+        console.log(currentUserName);
         chats.forEach(chat => {
             const chatDiv = document.createElement("div");
             chatDiv.classList.add("chat");
+            let chatName = chat.name_p1;  
+            if (currentUserName === chat.name_p1) {
+                chatName = chat.name_p2; 
+            } else if (currentUserName === chat.name_p2) {
+                chatName = chat.name_p1;
+            }
             const receiverId = chat.participants[0] == "{{ auth()->user()->id }}" ? chat.participants[1] : chat.participants[0];
             chatDiv.innerHTML = `
-                <p><strong>Chat with:</strong> ${chat.name}</p>
+                <p><strong>Chat with:</strong> ${chatName}</p>
                 <p><strong>Last Message:</strong> ${chat.last_message}</p>
                 <button onclick="openChat(${chat.id}, ${receiverId})">Open Chat</button>
             `;
@@ -411,7 +429,6 @@
         const message = messageInput.value;
         const senderId = "{{ auth()->user()->id }}"; 
         const receiverId = window.currentReceiverId; // Replace with dynamic receiver ID
-        
 
         messageInput.value = '';
 
@@ -435,7 +452,7 @@
         .catch(error => console.error('Error sending message:', error));
     }
     // Display Messages in the chat box
-function displayMessages(chats) {
+    function displayMessages(chats) {
     const messagesContainer = document.getElementById("messages");
     messagesContainer.innerHTML = "";  // Clear previous messages
 

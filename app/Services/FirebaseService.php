@@ -153,12 +153,13 @@ class FirebaseService
                 }
 
                 // Get the user's name (you may want to handle this depending on chat type)
-                $name = User::find($chatData['participants'][1])->first_name; // Assuming first_name is the field in the User table
-                
+                $p1name = User::find($chatData['participants'][1])->first_name;
+                $p2name = User::find($chatData['participants'][0])->first_name;
                 // Build chat data
                 $userChats[] = [
                     'chat_key' => $chatKey,
-                    'name' => $name,
+                    'name_p1' => $p1name,
+                    'name_p2' => $p2name,
                     'last_message' => $lastMessage,
                     'participants' => $chatData['participants'],
                     'group_name' => $chatData['group_name'] ?? null,
