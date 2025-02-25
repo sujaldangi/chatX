@@ -65,6 +65,15 @@ class AuthController extends Controller
     // User Login
     public function login(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            'email' => 'required|string',
+            'password' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
         if (Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
             $user = Auth::user();
             $token = $user->createToken('LaravelPassportToken')->accessToken;
@@ -111,12 +120,19 @@ class AuthController extends Controller
           return back()->with('message', 'We have e-mailed your password reset link!');
       }
 
-      public function submitResetPasswordForm(Request $request): RedirectResponse
+    public function submitResetPasswordForm(Request $request): RedirectResponse
       {
           $request->validate([
               'password' => 'required|string|min:6|confirmed',
-              'password_confirmation' => 'required'
+              'password_confirmation' => 'required',
+              
           ]);
+         
+          $passwordReset = PasswordReset::where('token', $request->token)->first();
+          \Log::info($request->token);
+          if (!$passwordReset) {
+                return back()->withInput()->with('error', 'Invalid token!');
+            }
           $email = PasswordReset::where('token',$request->token)->pluck('email');
           $updatePassword = PasswordReset::where('token', $request->token)->first();
 

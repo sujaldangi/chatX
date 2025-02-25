@@ -1,19 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Laravel 11 Custom Reset Password Functions</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" crossorigin="anonymous">
   <style type="text/css">
-    body{
-      background: #F8F9FA;
+    body {
+      background-color: #333; /* Dark background for the body */
+      color: #ffffff; /* White text color for contrast */
+    }
+    .card {
+      background-color: aliceblue; /* Dark background for the card */
+      color: #fff; /* White text inside the card */
+    }
+    .form-control {
+      
+      border: 1px solid black; /* Subtle border for input fields */
+    }
+    .form-control:focus {
+      border-color: #333; /* Blue border when input is focused */
+      
+    }
+    .btn-primary {
+      background-color: black; /* Primary button color */
+      border-color: blueviolet;
+      color: azure;
+    }
+    .btn-primary:hover {
+      background-color: darkgray; /* Darker shade for hover effect */
+      border-color: #004085; /* Darker border on hover */
+    }
+    
+    .form-label {
+      color: #bbb; /* Light gray text for labels */
     }
   </style>
 </head>
 <body>
 
-<section class="bg-light py-3 py-md-5">
+<section class="py-3 py-md-5">
   <div class="container">
     <div class="row justify-content-center">
       <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5 col-xxl-4">
@@ -40,7 +66,7 @@
 
                 <div class="col-12">
                   <div class="form-floating mb-3">
-                    <input type="email" class="form-control @error('email') is-invalid @enderror" name="email" id="email" placeholder="name@example.com" required>
+                    <input type="email" class="form-control @error('email') is-invalid @enderror" name="email" id="email" placeholder="name@example.com">
                     <label for="email" class="form-label">{{ __('Email Address') }}</label>
                   </div>
                 </div>

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Events\MessageSent;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
+use Pusher\Pusher;
 
 class ChatController extends Controller
 {
@@ -108,6 +109,23 @@ class ChatController extends Controller
                 $validated['receiver_id'],
                 $validated['message']
             );
+           
+            $pusher = new Pusher(env('PUSHER_APP_KEY'), env('PUSHER_APP_SECRET'), env('PUSHER_APP_ID'), [
+                'cluster' => env('PUSHER_APP_CLUSTER'),
+                'useTLS' => true,
+            ]);
+    
+            $pusher->trigger('chat-list.' . $validated['sender_id'], 'MessageSent', [
+                'sender_id' => $validated['sender_id'],
+                'receiver_id' => $validated['receiver_id'],
+                'message' => $validated['message'],
+            ]);
+    
+            $pusher->trigger('chat-list.' . $validated['receiver_id'], 'MessageSent', [
+                'sender_id' => $validated['sender_id'],
+                'receiver_id' => $validated['receiver_id'],
+                'message' => $validated['message'],
+            ]);
             \Log::info('Broadcasting event with message: ' . $validated['message']);
             $a = event(new MessageSent($validated['sender_id'],$validated['receiver_id'],$validated['message'],
             ));
