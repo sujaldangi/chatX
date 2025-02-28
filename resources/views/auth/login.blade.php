@@ -129,14 +129,18 @@
             @csrf
             <!-- Display validation error for email if any -->
             @error('email')
-                <div class="text-danger">{{ $message }}</div>
+                <div class="text-danger">
+                    {{ $message }}
+                </div>
             @enderror
             <input type="email" name="email" placeholder="Email">
 
 
             <!-- Display validation error for password if any -->
             @error('password')
-                <div class="text-danger">{{ $message }}</div>
+                <div class="text-danger">
+                    {{ $message }}
+                </div>
             @enderror
             <input type="password" name="password" placeholder="Password">
 
@@ -144,11 +148,14 @@
             <button type="submit">Login</button>
         </form>
         <div class="mt-3">
-            <a href="{{ route('forget.password.get') }}"
-                class="link-primary text-decoration-none">{{ __('forgot password?') }}</a>
+            <a href="{{ route('forget.password.get') }}" class="link-primary text-decoration-none">
+                {{ __('forgot password?') }}
+            </a>
         </div>
         <div class="mt-3">
-            <a href="{{ route('register') }}" class="link-primary text-decoration-none">{{ __('Register') }}</a>
+            <a href="{{ route('register') }}" class="link-primary text-decoration-none">
+                {{ __('Register') }}
+            </a>
         </div>
     </div>
 

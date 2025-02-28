@@ -13,18 +13,19 @@ class ViewController extends Controller
             return redirect()->route('dashboard');
         }
         return response()
-        ->view('auth.register')
-        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
+            ->view('auth.register')
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
     }
 
     public function loginView(Request $request)
     {
         if (Auth::check()) {
+            \Log::info(Auth::check());
             return redirect()->route('dashboard');
         }
         return response()
-        ->view('auth.login')
-        ->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
+            ->view('auth.login')
+            ->header('Cache-Control', 'no-store, no-cache, must-revalidate, post-check=0, pre-check=0');
     }
 
     public function dashboardView(Request $request)

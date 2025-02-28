@@ -106,48 +106,64 @@
 <div class="container">
     <h2>Register</h2>
 
-   
+
 
     <form action="{{ route('register.post') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <!-- User Information -->
         @error('first_name')
-            <div class="text-danger">{{ $message }}</div>
+            <div class="text-danger">
+                {{ $message }}
+            </div>
         @enderror
-        <input type="text" name="first_name" placeholder="First Name" value="{{ old('first_name') }}" >
+        <input type="text" name="first_name" placeholder="First Name" value="{{ old('first_name') }}">
 
         @error('last_name')
-            <div class="text-danger">{{ $message }}</div>
+            <div class="text-danger">
+                {{ $message }}
+            </div>
         @enderror
-        <input type="text" name="last_name" placeholder="Last Name" value="{{ old('last_name') }}" >
+        <input type="text" name="last_name" placeholder="Last Name" value="{{ old('last_name') }}">
 
         @error('email')
-            <div class="text-danger">{{ $message }}</div>
+            <div class="text-danger">
+                {{ $message }}
+            </div>
         @enderror
-        <input type="email" name="email" placeholder="Email" value="{{ old('email') }}" >
+        <input type="email" name="email" placeholder="Email" value="{{ old('email') }}">
 
         @error('phone_number')
-            <div class="text-danger">{{ $message }}</div>
+            <div class="text-danger">
+                {{ $message }}
+            </div>
         @enderror
-        <input type="text" name="phone_number" placeholder="Phone Number" value="{{ old('phone_number') }}" >
+        <input type="text" name="phone_number" placeholder="Phone Number" value="{{ old('phone_number') }}">
 
         @error('status')
-            <div class="text-danger">{{ $message }}</div>
+            <div class="text-danger">
+                {{ $message }}
+            </div>
         @enderror
-        <input type="text" name="status" placeholder="Status" value="{{ old('status') }}" >
+        <input type="text" name="status" placeholder="Status" value="{{ old('status') }}">
 
         @error('password')
-            <div class="text-danger">{{ $message }}</div>
+            <div class="text-danger">
+                {{ $message }}
+            </div>
         @enderror
-        <input type="password" name="password" placeholder="Password" >
+        <input type="password" name="password" placeholder="Password">
 
         @error('password_confirmation')
-            <div class="text-danger">{{ $message }}</div>
+            <div class="text-danger">
+                {{ $message }}
+            </div>
         @enderror
         <input type="password" name="password_confirmation" placeholder="Confirm Password" required>
 
         @error('picture')
-            <div class="text-danger">{{ $message }}</div>
+            <div class="text-danger">
+                {{ $message }}
+            </div>
         @enderror
         <input type="file" name="picture">
 
@@ -187,10 +203,10 @@
         if ('serviceWorker' in navigator) {
             navigator.serviceWorker
                 .register('/firebase-messaging-sw.js') // Path to the service worker
-                .then(function(registration) {
+                .then(function (registration) {
                     console.log('Service Worker registered with scope:', registration.scope);
                 })
-                .catch(function(err) {
+                .catch(function (err) {
                     console.log('Service Worker registration failed:', err);
                 });
         }

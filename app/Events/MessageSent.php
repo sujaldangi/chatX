@@ -15,20 +15,17 @@ class MessageSent implements ShouldBroadcast
     public $reciever_id;
     public $message;
 
-    public function __construct($sender_id,$reciever_id,$message)
+    public function __construct($sender_id, $reciever_id, $message)
     {
         $this->sender_id = $sender_id;
         $this->reciever_id = $reciever_id;
         $this->message = $message;
-        \Log::info('MessageSent event triggered with message: ' . $this->message);
     }
 
     public function broadcastOn()
     {
         $channelName = 'chat.' . min($this->sender_id, $this->reciever_id) . '.' . max($this->sender_id, $this->reciever_id);
         \Log::info('Channel name: ' . $channelName);
-    
-        // return new PrivateChannel($channelName);
         return new Channel($channelName);
     }
     public function broadcastAs()

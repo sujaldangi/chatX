@@ -173,7 +173,7 @@
         }
 
         .message.received {
-            background-color: #2D5E97;
+            background-color: dodgerblue;
             color: azure;
             align-self: flex-start;
         }
@@ -221,7 +221,7 @@
         }
 
         div::-webkit-scrollbar {
-            background-color:black;
+            background-color: black;
             width: 8px;
             /* Set the width of the scrollbar */
         }
@@ -247,6 +247,125 @@
             background-color: #555;
             /* Darker color on hover */
         }
+
+        /* Dropdown Menu Styling */
+        .user-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        #menu-button {
+            padding: 8px 16px;
+            background-color: #333;
+            color: azure;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #menu-button:hover {
+            background-color: #660000;
+        }
+
+        .dropdown-content {
+            display: none;
+            position: absolute;
+            right: 0;
+            background-color: #333;
+            min-width: 160px;
+            box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
+            z-index: 1;
+        }
+
+        .dropdown-content a,
+        .dropdown-content button {
+            color: azure;
+            padding: 12px 16px;
+            text-decoration: none;
+            display: block;
+            background-color: #333;
+            border: none;
+            width: 100%;
+            text-align: left;
+            cursor: pointer;
+        }
+
+        .dropdown-content a:hover,
+        .dropdown-content button:hover {
+            background-color: #660000;
+        }
+
+        /* Profile Modal Styling */
+        #profileModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+        .modal-content {
+            background-color: #333;
+            color: aliceblue;
+            padding: 20px;
+            border-radius: 8px;
+            width: 300px;
+            max-height: 80%;
+            overflow-y: auto;
+            z-index: 2001;
+        }
+
+        .modal-content span {
+            cursor: pointer;
+            color: aliceblue;
+            font-size: 20px;
+            border-radius: 1px;
+        }
+
+        .modal-content img {
+            width: 100px;
+            height: 100px;
+            object-fit: cover;
+            border-radius: 50%;
+            margin-bottom: 10px;
+        }
+
+        .modal-content p {
+            margin: 5px 0;
+        }
+
+        #imagePpf {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            overflow: hidden;
+            margin-right: 10px;
+        }
+
+        #imagePpf img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #staus-bar {
+            font-size: 16px;
+            font-weight: bold;
+            color: azure;
+        }
+
+        #chat-header {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background-color: #333;
+            border-bottom: 1px solid aliceblue;
+        }
     </style>
 </head>
 
@@ -254,11 +373,34 @@
     <header>
         <!--<h1>Welcome to Dashboard</h1>-->
         <img src="/storage/pictures/chatXlogo.png" alt="" width="7%">
-        <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
-            @csrf
-            <button type="submit" id="logoutButton">Logout</button>
-        </form>
+        <header>
+            <img src="/storage/pictures/chatXlogo.png" alt="" width="7%">
+            <div class="user-menu">
+                <button id="menu-button" onclick="toggleMenu()">☰</button>
+                <div id="menu-dropdown" class="dropdown-content">
+                    <a href="#" onclick="openProfileModal()">Profile Details</a>
+                    <form action="{{ route('logout') }}" method="POST" style="margin: 0;">
+                        @csrf
+                        <button type="submit" id="logoutButton">Logout</button>
+                    </form>
+                </div>
+            </div>
+        </header>
     </header>
+    <!-- Profile Modal -->
+    <div id="profileModal">
+        <div class="modal-content">
+            <span onclick="closeProfileModal()">&times;</span>
+            <h2>Profile Details</h2>
+            <div id="profile-details">
+                <img id="profile-picture" src="" alt="Profile Picture">
+                <p><strong>Name:</strong> <span id="profile-name"></span></p>
+                <p><strong>Email:</strong> <span id="profile-email"></span></p>
+                <p><strong>Phone Number:</strong> <span id="profile-phone"></span></p>
+                <p><strong>Status:</strong> <span id="profile-status"></span></p>
+            </div>
+        </div>
+    </div>
 
     <!-- Sidebar for Users and Chat List -->
     <div id="sidebar">
@@ -278,13 +420,22 @@
 
     <!-- Chat Box (Visible after selecting a chat) -->
     <div id="chat-box">
+        <div id="chat-header">
+            <a href="#" onclick="openProfileModalUser()">
+                <div id="imagePpf"></div>
+            </a>
+
+            <div id="staus-bar"></div>
+        </div>
+
+
         <div id="messages"></div>
         <input type="text" id="message-input" placeholder="Type a message..." />
         <button onclick="sendMessage()">Send</button>
     </div>
 
     <script>
-        document.addEventListener("DOMContentLoaded", function() {
+        document.addEventListener("DOMContentLoaded", function () {
             fetchChats(); // Fetch chats on page load
         });
 
@@ -295,7 +446,7 @@
         const userId = "{{ auth()->user()->id }}";
         const chatListChannel = pusher.subscribe(`chat-list.${userId}`);
 
-        chatListChannel.bind('MessageSent', function(data) {
+        chatListChannel.bind('MessageSent', function (data) {
             console.log('New message sent:', data);
             fetchChats(); // Refresh the chat list
         });
@@ -334,16 +485,16 @@
 
         function startChat(receiverId) {
             fetch('{{ route('start.chat') }}', {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        sender_id: "{{ auth()->user()->id }}",
-                        receiver_id: receiverId
-                    })
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    sender_id: "{{ auth()->user()->id }}",
+                    receiver_id: receiverId
                 })
+            })
                 .then(response => response.json())
                 .then(data => {
                     alert(data.message);
@@ -355,15 +506,15 @@
 
         function fetchChats() {
             fetch('{{ route('get.chats') }}', {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        user_id: "{{ auth()->user()->id }}"
-                    })
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    user_id: "{{ auth()->user()->id }}"
                 })
+            })
                 .then(response => response.json())
                 .then(data => {
                     if (data.chats.length > 0) {
@@ -411,23 +562,59 @@
             const userId = "{{ auth()->user()->id }}";
 
             fetch(`/get-chat-messages`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        userId: "{{ auth()->user()->id }}",
-                        receiverId: receiverId
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    userId: "{{ auth()->user()->id }}",
+                    receiverId: receiverId
                 })
+            })
                 .then(response => response.json())
                 .then(data => {
-                    console.log(data.chats);
+                    const imageDiv = document.getElementById("imagePpf");
+                    const imageUrl = data.chats.picture ? `/storage/${data.chats.picture}` : '/storage/pictures/default.webp';
+                    imageDiv.innerHTML = `
+                        <img src="${imageUrl}" alt="User"/>
+                    `;
+
+                    const chatUserName = data.chats.user_name_chat;
+                    const statusBarContainer = document.getElementById("staus-bar");
+                    fetch('{{ route('check.user.status') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute(
+                                'content')
+                        },
+                        body: JSON.stringify({
+                            user_id: receiverId
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(statusData => {
+                            const status = statusData.isOnline ? 'Online' : 'Offline';
+                            if (statusData.isOnline) {
+                                statusBarContainer.innerHTML =
+                                    ` ${chatUserName} <span style="color: green;">${status}</span>`;
+                            } else {
+                                statusBarContainer.innerHTML =
+                                    ` ${chatUserName} <span style="color: gray;">${status}</span>`;
+                            }
+
+                        })
+                        .catch(error => {
+                            console.log("Error checking user status:", error);
+                            statusBarContainer.innerHTML = ` ${chatUserName} Offline`;
+                        });
+
                     displayMessages(data.chats);
                     const messagesContainer = document.getElementById("messages");
                     messagesContainer.scrollTop = messagesContainer.scrollHeight;
                     subscribeToPusherChannel(receiverId);
+
                 })
                 .catch(error => console.log("Error fetching messages:", error));
         }
@@ -439,7 +626,7 @@
 
             var channel = pusher.subscribe(channelName);
 
-            channel.bind('MessageSent', function(data) {
+            channel.bind('MessageSent', function (data) {
                 console.log('Message received via Pusher:', data);
                 const message = data.message;
 
@@ -469,22 +656,22 @@
             messageInput.value = '';
 
             fetch('{{ route('send.message') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                    },
-                    body: JSON.stringify({
-                        sender_id: senderId,
-                        message: message,
-                        chat_type: 'individual',
-                        receiver_id: receiverId,
-                    })
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    sender_id: senderId,
+                    message: message,
+                    chat_type: 'individual',
+                    receiver_id: receiverId,
                 })
+            })
                 .then(response => response.json())
                 .then(data => {
                     console.log('Message sent:', data);
-                    document.querySelector('#messages p').innerHTML = '';
+
                     fetchChats();
                 })
                 .catch(error => console.error('Error sending message:', error));
@@ -514,6 +701,66 @@
             `;
                     messagesContainer.appendChild(messageDiv);
                 });
+            }
+        }
+
+        function toggleMenu() {
+            const dropdown = document.getElementById("menu-dropdown");
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        }
+
+        function openProfileModal() {
+            fetchUserDetails();
+            document.getElementById("profileModal").style.display = "block";
+            document.getElementById("menu-dropdown").style.display = "none";
+        }
+        function openProfileModalUser() {
+            const receiverId = window.currentReceiverId;
+            fetchUserDetails(receiverId);
+            document.getElementById("profileModal").style.display = "block";
+            document.getElementById("menu-dropdown").style.display = "none";
+        }
+
+        function closeProfileModal() {
+            document.getElementById("profileModal").style.display = "none";
+        }
+
+        function fetchUserDetails(userId = null) {
+            const finalUserId = userId || "{{ auth()->user()->id }}";
+
+            fetch('{{ route('user.details') }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    "X-CSRF-TOKEN": document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    user_id: finalUserId,
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    document.getElementById("profile-picture").src = data.picture ? `/storage/${data.picture}` :
+                        '/storage/pictures/default.webp';
+                    document.getElementById("profile-name").textContent = `${data.first_name} ${data.last_name}`;
+                    document.getElementById("profile-email").textContent = data.email;
+                    document.getElementById("profile-phone").textContent = data.phone_number;
+                    document.getElementById("profile-status").textContent = data.status;
+                })
+                .catch(error => console.error('Error sending message:', error));
+        }
+
+        // Close the dropdown if the user clicks outside of it
+        window.onclick = function (event) {
+            if (!event.target.matches('#menu-button')) {
+                const dropdowns = document.getElementsByClassName("dropdown-content");
+                for (let i = 0; i < dropdowns.length; i++) {
+                    const openDropdown = dropdowns[i];
+                    if (openDropdown.style.display === "block") {
+                        openDropdown.style.display = "none";
+                    }
+                }
             }
         }
     </script>

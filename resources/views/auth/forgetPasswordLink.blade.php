@@ -9,43 +9,55 @@
         crossorigin="anonymous">
     <style type="text/css">
         body {
-            background: #181818; /* Dark background for the body */
-            color: #ffffff; /* White text color for contrast */
+            background: #181818;
+            /* Dark background for the body */
+            color: #ffffff;
+            /* White text color for contrast */
         }
 
         .card {
-            background-color: aliceblue; /* Dark background for the card */
-            color: black; /* White text inside the card */
+            background-color: aliceblue;
+            /* Dark background for the card */
+            color: black;
+            /* White text inside the card */
         }
 
         .form-control {
-      
-        border: 1px solid black; /* Subtle border for input fields */
+
+            border: 1px solid black;
+            /* Subtle border for input fields */
         }
 
         .form-control:focus {
-        border-color: #333; /* Blue border when input is focused */
-        
+            border-color: #333;
+            /* Blue border when input is focused */
+
         }
 
         .btn-primary {
-        background-color: black; /* Primary button color */
-        border-color: blueviolet;
-        color: azure;
-        }
-        .btn-primary:hover {
-        background-color: darkgray; /* Darker shade for hover effect */
-        border-color: #004085; /* Darker border on hover */
+            background-color: black;
+            /* Primary button color */
+            border-color: blueviolet;
+            color: azure;
         }
 
-        
+        .btn-primary:hover {
+            background-color: darkgray;
+            /* Darker shade for hover effect */
+            border-color: #004085;
+            /* Darker border on hover */
+        }
+
+
 
         .form-label {
-            color: #bbb; /* Light gray text for labels */
+            color: #bbb;
+            /* Light gray text for labels */
         }
 
         .bg-light {
-            background-color: #181818 !important; /* Dark background for the section */
+            background-color: #181818 !important;
+            /* Dark background for the section */
         }
     </style>
 </head>
@@ -81,10 +93,14 @@
                                         <div class="form-floating mb-3">
                                             <input type="password"
                                                 class="form-control @error('password') is-invalid @enderror"
-                                                name="password" id="password" placeholder="name@example.com" >
-                                            <label for="password" class="form-label">{{ __('Password') }}</label>
+                                                name="password" id="password" placeholder="name@example.com">
+                                            <label for="password" class="form-label">
+                                                {{ __('Password') }}
+                                            </label>
                                             @if ($errors->has('password'))
-                                                <span class="text-danger">{{ $errors->first('password') }}</span>
+                                                <span class="text-danger">
+                                                    {{ $errors->first('password') }}
+                                                </span>
                                             @endif
                                         </div>
                                     </div>
@@ -94,20 +110,23 @@
                                             <input type="password"
                                                 class="form-control @error('password_confirmation') is-invalid @enderror"
                                                 name="password_confirmation" id="password_confirmation"
-                                                placeholder="name@example.com" >
-                                            <label for="password_confirmation"
-                                                class="form-label">{{ __('Confirm Password') }}</label>
+                                                placeholder="name@example.com">
+                                            <label for="password_confirmation" class="form-label">
+                                                {{ __('Confirm Password') }}
+                                            </label>
                                             @if ($errors->has('password_confirmation'))
-                                                <span
-                                                    class="text-danger">{{ $errors->first('password_confirmation') }}</span>
+                                                <span class="text-danger">
+                                                    {{ $errors->first('password_confirmation') }}
+                                                </span>
                                             @endif
                                         </div>
                                     </div>
 
                                     <div class="col-12">
                                         <div class="d-grid my-3">
-                                            <button class="btn btn-primary btn-lg"
-                                                type="submit">{{ __('Reset Password') }}</button>
+                                            <button class="btn btn-primary btn-lg" type="submit">
+                                                {{ __('Reset Password') }}
+                                            </button>
                                         </div>
                                     </div>
 

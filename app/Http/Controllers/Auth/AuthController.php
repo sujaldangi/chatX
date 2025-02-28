@@ -13,7 +13,8 @@ use Illuminate\Support\Facades\Validator;
 use Mail;
 use DB;
 use App\Mail\RegisterMail;
-use Carbon\Carbon; 
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 use Illuminate\Http\RedirectResponse;
 
@@ -56,7 +57,7 @@ class AuthController extends Controller
             'title' => 'Mail from chatX',
             'body' => 'user registered'
         ];
-           
+
         Mail::to('test@gmail.com')->queue(new RegisterMail($mailData));
 
         return redirect()->route('login')->with('success', 'Registration successful! Please login.');
@@ -98,56 +99,79 @@ class AuthController extends Controller
     }
 
     public function submitForgetPasswordForm(Request $request): RedirectResponse
-      {
-          $request->validate([
-              'email' => 'required|email|exists:users',
-          ]);
-  
-          $token = Str::random(64);
-  
-       
-          PasswordReset::create([
+    {
+        $request->validate([
+            'email' => 'required|email|exists:users',
+        ]);
+
+        $token = Str::random(64);
+
+
+        PasswordReset::create([
             'email' => $request->email,
             'token' => $token,
         ]);
 
-  
-          Mail::send('email.forgetPassword', ['token' => $token], function($message) use($request){
-              $message->to($request->email);
-              $message->subject('Reset Password');
-          });
-  
-          return back()->with('message', 'We have e-mailed your password reset link!');
-      }
+
+        Mail::send('email.forgetPassword', ['token' => $token], function ($message) use ($request) {
+            $message->to($request->email);
+            $message->subject('Reset Password');
+        });
+
+        return back()->with('message', 'We have e-mailed your password reset link!');
+    }
 
     public function submitResetPasswordForm(Request $request): RedirectResponse
-      {
-          $request->validate([
-              'password' => 'required|string|min:6|confirmed',
-              'password_confirmation' => 'required',
-              
-          ]);
-         
-          $passwordReset = PasswordReset::where('token', $request->token)->first();
-          \Log::info($request->token);
-          if (!$passwordReset) {
-                return back()->withInput()->with('error', 'Invalid token!');
-            }
-          $email = PasswordReset::where('token',$request->token)->pluck('email');
-          $updatePassword = PasswordReset::where('token', $request->token)->first();
+    {
+        $request->validate([
+            'password' => 'required|string|min:6|confirmed',
+            'password_confirmation' => 'required',
 
-  
-          if(!$updatePassword){
-              return back()->withInput()->with('error', 'Invalid token!');
-          }
+        ]);
 
-          $user = User::where('email', $email)
+        $passwordReset = PasswordReset::where('token', $request->token)->first();
+
+        if (!$passwordReset) {
+            return back()->withInput()->with('error', 'Invalid token!');
+        }
+        $email = PasswordReset::where('token', $request->token)->pluck('email');
+        $updatePassword = PasswordReset::where('token', $request->token)->first();
+
+
+        if (!$updatePassword) {
+            return back()->withInput()->with('error', 'Invalid token!');
+        }
+
+        $user = User::where('email', $email)
             ->update(['password' => Hash::make($request->password)]);
 
 
-          PasswordReset::where('token', $request->token)->delete();
+        PasswordReset::where('token', $request->token)->delete();
 
-  
-          return redirect('/login')->with('message', 'Your password has been changed!');
-      }
+
+        return redirect('/login')->with('message', 'Your password has been changed!');
+    }
+
+    public function getUserDetails(Request $request)
+    {
+        $user = User::find($request->user_id);
+
+        if (!$user) {
+            return response()->json(['error' => 'User not found'], 404);
+        }
+
+        $user = $user->toArray();
+        unset($user['device_tokens']);
+
+        return response()->json($user);
+    }
+
+    public function checkUserStatus(Request $request)
+    {
+        $userId = $request->input('user_id');
+        $isOnline = Cache::has('user-is-online-' . $userId);
+
+        return response()->json(['isOnline' => $isOnline]);
+    }
+
 }
