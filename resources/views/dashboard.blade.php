@@ -30,6 +30,16 @@
             z-index: 1000;
         }
 
+        .timestamp {
+            font-size: 0.8em;
+            /* Small font size */
+            color: black;
+            /* Black text color */
+            margin-top: 5px;
+            /* Optional: Add space between message and timestamp */
+        }
+
+
         header h1 {
             margin: 0;
         }
@@ -438,6 +448,11 @@
         document.addEventListener("DOMContentLoaded", function () {
             fetchChats(); // Fetch chats on page load
         });
+        document.getElementById('message-input').addEventListener('keypress', function (event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
 
         Pusher.logToConsole = true;
         var pusher = new Pusher('24c0536b2bb45e29a90e', {
@@ -675,6 +690,7 @@
                     fetchChats();
                 })
                 .catch(error => console.error('Error sending message:', error));
+
         }
 
         function displayMessages(chats) {
@@ -695,9 +711,12 @@
                     } else {
                         messageDiv.classList.add("received");
                     }
+                    const timestamp = message.timestamp;
+
 
                     messageDiv.innerHTML = `
                 <p><strong>${message.sender_id === "{{ auth()->user()->id }}" ? "You" : "User"}:</strong> ${message.content}</p>
+                <p class="timestamp">${timestamp}</p>
             `;
                     messagesContainer.appendChild(messageDiv);
                 });
